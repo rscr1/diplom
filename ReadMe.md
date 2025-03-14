@@ -1,0 +1,105 @@
+# Проект: НЦФМ
+
+## Путь
+### Репозиторий на кластере
+`/storage/3030/AkhmetzyanovD/projects/nztfm/main_pipeline`
+
+### Путь до данных
+`/storage/3030/AkhmetzyanovD/projects/nztfm/dataset`
+
+### Путь до предпроцессинга, конвертации в ONNX, замера latency
+`/AkhmetzyanovD/projects/nztfm/utils`
+
+### Путь до докера
+`/AkhmetzyanovD/projects/nztfm/docker`
+`segmentation_models_pytorch`.
+
+## Основные возможности
+- Поддержка задач:
+  - Сегментация изображений (бинарная, мультиклассовая, мультиметочная)
+  - Оценка глубины
+- Поддержка архитектур:
+  - DeepLabV3
+  - FPN
+  - HydraNets
+- Аугментация данных с использованием библиотеки Albumentations
+- Поддержка различных функций потерь:
+  - Для сегментации: Focal Loss, CrossEntropy, Lovasz, Dice, Jaccard, Tversky
+  - Для оценки глубины: MSE
+- Поддержка метрик:
+  - Для сегментации: IoU, Dice
+  - Для оценки глубины: MAE, MSE, RMSE
+- Интеграция с ClearML для логирования экспериментов
+- Поддержка распределенного обучения (DDP, DP)
+
+## Структура проекта
+```
+main_pipeline/
+├── augment.py # Модуль для аугментации данных
+├── config.py # Обработка конфига
+├── dataset.py # Классы для работы с данными
+├── Loss.py # Функции потерь (изменена для обучениия на разреженных данных)
+├── main.py # Основной скрипт для запуска обучения
+├── metrics/ # Модули для вычисления метрик
+│ └── mse.py # Метрики для оценки глубины
+├── multihead_model.py # Каталог HydraNet архитектур
+├── test.py # Скрипт для тестирования моделей
+├── train.py # Основной модуль для обучения
+├── train_loop.py # Цикл обучения
+└── utils_func.py # Вспомогательные функции
+```
+
+## Быстрый старт
+
+### Установка зависимостей
+
+```bash
+pip install -r requirements.txt
+```
+
+### Запуск обучения
+1. Создайте конфигурационный файл в формате YAML (примеры в папке `configs`).
+2. Запустите обучение:
+    ```bash
+    python main.py --config /path/to/config.yaml
+    ```
+
+## Конфигурация
+Проект использует YAML-файлы для настройки всех параметров обучения и тестирования. Основные разделы конфигурации:
+- **Model**: Настройки модели (архитектура, энкодер, веса)
+- **Task**: Тип задачи (сегментация, оценка глубины или обе)
+- **Data**: Пути к данным, размер изображений, аугментации
+- **Training**: Параметры обучения (оптимизатор, функция потерь, метрики, количество эпох и т.д.)
+- **Hardware**: Настройки оборудования (устройство, параллелизм)
+
+## Логирование и визуализация
+Проект интегрирован с ClearML для логирования экспериментов. В процессе обучения логируются:
+- Значения функции потерь на тренировочной и валидационной выборках
+- Значения метрик
+- Learning rate
+- Визуализации предсказаний
+
+## Подводные камни
+Для обучения DeepLabv3 нужно исправить баг:
+`/opt/conda/lib/python3.10/site-packages/segmentation_models_pytorch/decoders/deeplabv3/model.py`
+
+```python
+self.encoder = get_encoder(
+    encoder_name,
+    in_channels=in_channels,
+    depth=encoder_depth,
+    weights=encoder_weights,
+    output_stride=8,
+)
+```
+на
+```python
+self.encoder = get_encoder(
+    encoder_name,
+    in_channels=in_channels,
+    depth=encoder_depth,
+    weights=encoder_weights,
+    output_stride=upsampling,
+)
+
+```

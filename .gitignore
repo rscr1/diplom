@@ -1,0 +1,14 @@
+__pycache__
+.ipynb_checkpoints
+
+multitask_pipeline/
+# Игнорируем директорию seg_pipeline
+seg_pipeline/
+
+*runs*
+test*
+!test_config.yaml
+!test.py
+dataset/
+*models
+

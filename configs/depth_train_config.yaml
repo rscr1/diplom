@@ -1,0 +1,103 @@
+# Model configuration
+model:
+  name: "segm_fpn_depth_decoder_head"  # Model architecture name
+  encoder: "mit_b1"  # Encoder backbone
+  weights: "/AkhmetzyanovD/projects/nztfm/main_pipeline/runs/segm_fpn_mit_b1/launch_0/weights/best_model"  # Path to pretrained weights if any
+
+# Task configuration
+task:
+  type: "depth"  # Task type: 'depth' or 'segm'
+  mode: 'none'  # Training mode for segmentation: binary/multiclass/multilabel
+  classes: 8  # if training hydranet, classes = num classes for segmentation Number of output classes
+
+# Data configuration
+data:
+  train_path: "/AkhmetzyanovD/projects/nztfm/dataset/data_depth/train.txt"  # Path to training data
+  valid_path: "/AkhmetzyanovD/projects/nztfm/dataset/data_depth/valid.txt"  # Path to validation data
+  colors_path: null  # Path to color mapping for segmentation visualization
+  image_size:
+    height: 256
+    width: 1248
+  augmentation:
+    train:
+      resize:
+        enable: true
+        params:
+          interpolation: "INTER_NEAREST"
+      horizontal_flip:
+        enable: true
+        params:
+          p: 0.5
+      shift_scale_rotate:
+        enable: false
+        params:
+          rotate_limit: [0, 0]
+          border_mode: 0
+          value: 0
+          p: 0.5
+      brightness_contrast:
+        enable: false
+        params:
+          brightness_limit: [-0.5, 0.5]
+          contrast_limit: [-0.5, 0.5]
+          p: 0.1
+      grid_distortion:
+        enable: false
+        params:
+          num_steps: 5
+          distort_limit: [-0.3, 0.3]
+          p: 0.5
+      normalize:
+        enable: true
+      to_tensor:
+        enable: true
+    valid:
+      resize:
+        enable: true
+        params:
+          interpolation: "INTER_NEAREST"
+      normalize:
+        enable: true
+      to_tensor:
+        enable: true
+
+# Training configuration
+training:
+  batch_size: 32
+  epochs: 3
+  optimizer:
+    name: "Adam"  # Optimizer name
+    lr: 0.0003
+  scheduler:
+    name: null  # Scheduler name
+    mode: 'min'  # Mode for ReduceLROnPlateau
+    factor: 0.1  # Factor for ReduceLROnPlateau
+    patience: 10  # Patience for ReduceLROnPlateau
+    step_size: 10  # Step size for StepLR
+    gamma: 0.1  # Gamma for StepLR
+    max_lr: 1e-3  # Max learning rate for OneCycleLR
+  loss:
+    name: "mse"  # Loss function name
+    weights: null  # Class weights for segmentation
+    ignore_index: null  # Index to ignore in segmentation
+  metrics:  # List of evaluation metrics
+    segmentation:  # Metrics for segmentation task
+      - "iou"  # Options: iou, dice
+      - "dice"
+    depth:  # Metrics for depth estimation task
+      - "rmse"  # Options: mse, mae, rmse
+      - "mae"
+  early_stopping: 15
+  seed: 42
+
+# Hardware configuration
+hardware:
+  device: "cuda"  # Device to run on: cpu/cuda
+  parallel:
+    type: "dp"  # Parallelization type: None/dp/ddp
+    device_ids: [0, 1, 2, 3, 4, 5, 8, 9]  # List of GPU devices to use
+
+# Output configuration
+output:
+  project_name: "private/AkhmetzyanovD/nztfm"  # ClearML project name
+  save_dir: "./main_pipeline/runs/depth_fpn_mit_b1"  # Directory to save outputs

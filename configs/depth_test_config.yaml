@@ -1,0 +1,45 @@
+# Model configuration
+model:
+  name: "segm_fpn_depth_decoder_head"  # Model architecture name
+  encoder: "mit_b1"  # Encoder backbone
+  weights: "/AkhmetzyanovD/projects/nztfm/main_pipeline/runs/depth_fpn_mit_b1/launch_3/weights/best_model"  # Path to trained model weights
+
+# Task configuration
+task:
+  type: "depth"  # Task type: 'depth' or 'segm'
+  classes: 8  # Number of output classes
+  mode: 'none' # Training mode for segmentation: binary/multiclass/multilabel
+
+# Data configuration
+data:
+  test_path: "/AkhmetzyanovD/projects/nztfm/dataset/data_depth/valid.txt"  # Path to test data
+  colors_path: null  # Path to color mapping for segmentation visualization
+  image_size:
+    height: 256
+    width: 1248
+  augmentation:
+    resize:
+      enable: true
+      params:
+        interpolation: "INTER_NEAREST"
+    normalize:
+      enable: true
+    to_tensor:
+      enable: true
+
+# Testing configuration
+testing:
+  batch_size: 40  # Batch size for testing
+  device: "cuda"  # Device to run on: cpu/cuda
+  metrics:  # List of evaluation metrics
+    segmentation:  # Metrics for segmentation task
+      - "iou"  # Options: iou, dice
+      - "dice"
+    depth:  # Metrics for depth estimation task
+      - "rmse"  # Options: mse, mae, rmse
+      - "mae"
+  ignore_index: null
+
+# Output configuration
+output:
+  save_dir: "./main_pipeline/test/depth_fpn_mit_b1"  # Directory to save test results
