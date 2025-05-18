@@ -1,18 +1,4 @@
-# Проект: НЦФМ
-
-## Путь
-### Репозиторий на кластере
-`/storage/3030/AkhmetzyanovD/projects/nztfm/main_pipeline`
-
-### Путь до данных
-`/storage/3030/AkhmetzyanovD/projects/nztfm/dataset`
-
-### Путь до предпроцессинга, конвертации в ONNX, замера latency
-`/AkhmetzyanovD/projects/nztfm/utils`
-
-### Путь до докера
-`/AkhmetzyanovD/projects/nztfm/docker`
-`segmentation_models_pytorch`.
+# Дипломная работа
 
 ## Основные возможности
 - Поддержка задач:
